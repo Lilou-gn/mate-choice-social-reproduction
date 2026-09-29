@@ -115,6 +115,8 @@ skipped: `data/` is versioned. Rerunning it reproduces the files of `data/` exac
 ## Authors
 
 - Pierre Raffalli ([@pierridotite](https://github.com/pierridotite))
+- Fanny Dagnogo ([@fannydagnogo](https://github.com/fannydagnogo))
+- Lilou Guénue ([@lilou-gn](https://github.com/lilou-gn))
 
 ## Sources
 
