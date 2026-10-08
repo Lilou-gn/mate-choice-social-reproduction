@@ -20,21 +20,37 @@ interactif <- function(p, legende = TRUE) {
     trace
   })
   g |>
-    layout(showlegend = legende, hoverlabel = list(align = "left"),
-           legend = list(orientation = "h", x = 0, y = 1.02, yanchor = "bottom",
-                         title = list(text = ""))) |>
+    layout(showlegend = legende, legend = list(orientation = "h", x = 0, y = 1.02,
+                                               yanchor = "bottom", title = list(text = ""))) |>
+    habiller()
+}
+
+# Habillage commun à tous les graphiques plotly : fond transparent (celui de la page),
+# police et infobulles de l'application
+habiller <- function(g) {
+  g |>
+    layout(paper_bgcolor = "rgba(0,0,0,0)", plot_bgcolor = "rgba(0,0,0,0)",
+           font = list(family = "Plus Jakarta Sans", color = col_dark),
+           hoverlabel = list(align = "left", bgcolor = "white", bordercolor = col_grid,
+                             font = list(family = "Plus Jakarta Sans", color = col_dark))) |>
     config(displaylogo = FALSE, locale = "fr",
            modeBarButtonsToRemove = c("lasso2d", "select2d", "autoScale2d"))
 }
 
 # Encadré « À retenir » sous chaque graphique
 a_retenir <- function(...) {
-  div(class = "a-retenir", strong("À retenir"), tags$ul(lapply(list(...), tags$li)))
+  div(class = "a-retenir", div(class = "titre", "À retenir"), tags$ul(lapply(list(...), tags$li)))
 }
 
-# Chiffre clé en tête de page
-chiffre_cle <- function(valeur, libelle) {
-  div(class = "chiffre-cle", div(class = "valeur", valeur), div(class = "libelle", libelle))
+# Chiffres clés : une grille de cartes qui s'adapte à la largeur
+chiffre_cle <- function(valeur, libelle, class = NULL) {
+  div(class = c("chiffre-cle", class), div(class = "valeur", valeur), div(class = "libelle", libelle))
+}
+chiffres_cles <- function(...) div(class = "chiffres", ...)
+
+# Conclusion numérotée de la page « En résumé »
+conclusion <- function(numero, titre, ...) {
+  div(class = "conclusion", span(class = "numero", numero), h6(titre), p(...))
 }
 
 # --- Préparation --------------------------------------------------------------------
@@ -131,7 +147,7 @@ graphique_grille <- function(dates, vague, tri) {
                      "\n", rang, "e date de la soirée pour elle")
     )
   p <- ggplot(g, aes(x = x, y = y, fill = statut, text = texte)) +
-    geom_tile(colour = "white", linewidth = 0.8) +
+    geom_tile(colour = palette_amour[["fond"]], linewidth = 0.8) +
     scale_fill_manual(values = statuts_rencontre, name = NULL, drop = FALSE) +
     labs(x = "Hommes", y = "Femmes") +
     theme(panel.grid = element_blank())
@@ -437,7 +453,7 @@ graphique_surface <- function(dates, note_x, note_y, genre_choisi, n_min = 15) {
                         yaxis = list(title = noms[[note_y]], range = c(0, 10)),
                         zaxis = list(title = "Oui", tickformat = ".0%", range = c(0, 1)),
                         camera = list(eye = list(x = -1.5, y = -1.7, z = 0.8)))) |>
-    config(displaylogo = FALSE, locale = "fr")
+    habiller()
 }
 
 # --- 5. Ce qui est fiable --------------------------------------------------------------

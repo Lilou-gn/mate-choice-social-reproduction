@@ -30,11 +30,10 @@ col_dark <- palette_amour[["texte"]]
 col_muted <- "#725E63"
 col_grid <- palette_amour[["gris_rose"]]
 couleurs_genre <- c("Femmes" = col_femme, "Hommes" = col_homme)
+# Le fond des graphiques est rendu transparent par plotly (habiller(), decouverte.R)
 theme_set(theme_projet() + theme(
   text = element_text(family = "Plus Jakarta Sans"),
-  plot.title = element_text(family = "Lora"),
-  plot.background = element_rect(fill = palette_amour[["fond"]], colour = NA),
-  panel.background = element_rect(fill = palette_amour[["fond"]], colour = NA)
+  plot.title = element_text(family = "Lora")
 ))
 
 source("fonctions/donnees.R")      # tables et dictionnaire des variables

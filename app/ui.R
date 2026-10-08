@@ -1,21 +1,29 @@
 navbarPage(
+  title = "Rencontres et reproduction sociale",
+  id = "navigation",
+  windowTitle = "Rencontres et reproduction sociale",
+  inverse = TRUE,
   header = tags$head(
-    tags$link(rel = "preconnect", href = "https://fonts.googleapis.com"),
-    tags$link(rel = "preconnect", href = "https://fonts.gstatic.com", crossorigin = "anonymous"),
-    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"),
     tags$link(rel = "stylesheet", href = "style.css"),
     tags$script(src = "cupidien.js")
   ),
-  title = "Rencontres et reproduction sociale",
-  id = "navigation",
+  # Thème partagé avec les graphiques (palette_amour, global.R). Les polices sont
+  # téléchargées une fois puis servies par l'application.
   theme = bs_theme(
     version = 5,
+    bg = palette_amour[["fond"]],
+    fg = palette_amour[["texte"]],
     primary = palette_amour[["rouge"]],
     secondary = palette_amour[["prune"]],
-    bg = palette_amour[["fond"]],
-    `bg-dark` = palette_amour[["prune"]],
-    fg = palette_amour[["texte"]],
-    "font-size-base" = "0.95rem"
+    base_font = font_collection(font_google("Plus Jakarta Sans", wght = c(400, 500, 600, 700)),
+                                "system-ui", "sans-serif"),
+    heading_font = font_collection(font_google("Lora", wght = c(500, 600, 700)), "Georgia", "serif"),
+    "font-size-base" = "0.95rem",
+    "navbar-dark-bg" = palette_amour[["rouge"]],
+    "navbar-dark-color" = "rgba(251, 243, 241, 0.82)",
+    "navbar-dark-hover-color" = palette_amour[["fond"]],
+    "border-color" = palette_amour[["gris_rose"]],
+    "border-radius" = "0.6rem"
   ),
 
   # --- Découvrir les données ---------------------------------------------------------------
@@ -35,13 +43,13 @@ navbarPage(
             "chaque femme rencontre chaque homme pendant quatre minutes. Après chaque date, chacun",
             "note son partenaire et dit oui ou non, sans connaître la décision de l'autre. Deux",
             "oui font un match."),
-          fluidRow(
-            column(2, chiffre_cle("21", "soirées (vagues), de 10 à 44 participants")),
-            column(2, chiffre_cle("551", "participants : 274 femmes, 277 hommes")),
-            column(2, chiffre_cle(milliers(nrow(dates_app)), "lignes : une par décision")),
-            column(2, chiffre_cle("217", "colonnes : protocole, questionnaires, notes, Census")),
-            column(2, chiffre_cle(pct(mean(dates_app$dec)), "de oui")),
-            column(2, chiffre_cle(pct(mean(dates_app$match)), "des rencontres finissent en match"))
+          chiffres_cles(
+            chiffre_cle("21", "soirées (vagues), de 10 à 44 participants"),
+            chiffre_cle("551", "participants : 274 femmes, 277 hommes"),
+            chiffre_cle(milliers(nrow(dates_app)), "lignes : une par décision"),
+            chiffre_cle("217", "colonnes : protocole, questionnaires, notes, Census"),
+            chiffre_cle(pct(mean(dates_app$dec)), "de oui"),
+            chiffre_cle(pct(mean(dates_app$match)), "des rencontres finissent en match")
           ),
           fluidRow(
             column(3, selectInput("d_vague", "Soirée", choices = levels(dates_app$wave),
@@ -59,7 +67,7 @@ navbarPage(
           a_retenir(
             "Une ligne du tableau est une décision : 8 378 décisions, soit 4 189 rencontres vues des deux côtés. Les colonnes terminées par _o donnent la réponse du partenaire.",
             "Personne ne choisit qui il rencontre : dans une soirée, chaque femme voit chaque homme. On peut donc comparer les choix d'une même personne entre des partenaires qu'elle n'a pas sélectionnés.",
-            "Les hommes disent plus souvent oui (47 %) que les femmes (37 %). Surtout, la décision dépend beaucoup de la personne qui juge : un homme qui dit oui à toutes les femmes donne une colonne entièrement bleue ou verte (H1 dans la vague 7).",
+            "Les hommes disent plus souvent oui (47 %) que les femmes (37 %). Surtout, la décision dépend beaucoup de la personne qui juge : un homme qui dit oui à toutes les femmes donne une colonne entièrement violette ou rouge foncé (H1 dans la vague 7).",
             "Les grandes soirées pèsent beaucoup plus : la vague 21 fournit 968 lignes, la vague 6 seulement 50."
           )
         ),
@@ -112,7 +120,7 @@ navbarPage(
             column(6, radioButtons("d_moment", "Moment", choices = moments_pref))
           ),
           plotlyOutput("p_preferences", height = "440px"),
-          p(class = "lecture", "Barres fines : intervalle de confiance à 95 % de la moyenne."),
+          p(class = "resume", "Barres fines : intervalle de confiance à 95 % de la moyenne."),
           a_retenir(
             "À l'inscription, les hommes mettent l'attirance physique en tête (27 points sur 100). Les femmes répartissent leurs points plus également et mettent l'intelligence en tête (21 points), l'attirance à 18.",
             "Chaque sexe surestime l'importance du physique pour l'autre (question « ce que l'autre sexe recherche ») : les femmes pensent que les hommes lui donnent 36 points, les hommes pensent que les femmes lui en donnent 25.",
@@ -133,23 +141,25 @@ navbarPage(
             column(4, radioButtons("d_vue_oui", "Vue", inline = TRUE,
                                    choices = c("Une note" = "courbe",
                                                "Deux notes à la fois (3D)" = "surface"))),
-            column(4, selectInput("d_note_x", "Note", choices = notes_fiche, selected = "attr")),
+            column(4, selectInput("d_note_x", "Note", choices = notes_fiche, selected = "attr",
+                                  width = "100%")),
             column(4, conditionalPanel(
               "input.d_vue_oui == 'surface'",
-              selectInput("d_note_y", "Deuxième note", choices = notes_fiche, selected = "fun")
+              selectInput("d_note_y", "Deuxième note", choices = notes_fiche, selected = "fun",
+                          width = "100%")
             ))
           ),
           conditionalPanel(
             "input.d_vue_oui == 'courbe'",
             plotlyOutput("p_taux_note", height = "460px"),
-            p(class = "lecture", "Taille des points : nombre de décisions. Les notes données moins",
+            p(class = "resume", "Taille des points : nombre de décisions. Les notes données moins",
               "de 20 fois ne sont pas affichées. Pointillé : taux de oui moyen.")
           ),
           conditionalPanel(
             "input.d_vue_oui == 'surface'",
             radioButtons("d_surface_genre", "Décisions des", choices = unname(genres_fr), inline = TRUE),
             p(class = "lecture", "La surface donne la probabilité de oui estimée pour chaque",
-              "combinaison des deux notes (régression logistique). Les points gris sont les taux",
+              "combinaison des deux notes (régression logistique). Les points sombres sont les taux",
               "observés, pour les combinaisons données au moins 15 fois. Pas de surface là où il",
               "n'y a presque pas de données. Fais tourner la surface : la pente est plus forte",
               "dans la direction de la note qui compte le plus."),
@@ -189,36 +199,39 @@ navbarPage(
           h3("Ce que l'on retient du jeu de données"),
           p(class = "intro", "Une conclusion par graphique, indépendamment de la question du",
             "milieu social."),
-          div(class = "conclusion", h6("1. Une expérience presque contrôlée"),
-              p("Dans une soirée, chacun rencontre tout le monde : les partenaires ne sont pas",
-                "choisis. La décision dépend beaucoup de la personne qui juge : les décisions",
-                "d'une même personne ne sont pas indépendantes, il faudra en tenir compte dans",
-                "les modèles.")),
-          div(class = "conclusion", h6("2. Une population très particulière"),
-              p("Des étudiants d'une université d'élite, de 26 ans en moyenne, issus de quartiers",
-                "aisés, avec des parcours très genrés. Les résultats ne se généralisent pas à",
-                "toute la population.")),
-          div(class = "conclusion", h6("3. Des préférences déclarées différentes selon le genre"),
-              p("Les hommes disent chercher d'abord l'attirance, les femmes l'intelligence, et",
-                "chaque sexe surestime l'importance du physique pour l'autre.")),
-          div(class = "conclusion", h6("4. Mais le physique décide, pour tout le monde"),
-              p("Dans les décisions, l'attirance domine chez les deux genres, suivie de l'humour",
-                "et des intérêts communs. Les six notes sont fortement corrélées : une note est",
-                "surtout une impression générale.")),
-          div(class = "conclusion", h6("5. Rester au plus près de la soirée"),
-              p("La fiche de notation est complète ; les suivis sont très incomplets et sans",
-                "doute biaisés. Les analyses doivent reposer sur les décisions prises pendant la",
-                "soirée."))
+          div(
+            class = "conclusions",
+            conclusion("1", "Une expérience presque contrôlée",
+                       "Dans une soirée, chacun rencontre tout le monde : les partenaires ne sont pas",
+                       "choisis. La décision dépend beaucoup de la personne qui juge : les décisions",
+                       "d'une même personne ne sont pas indépendantes, il faudra en tenir compte dans",
+                       "les modèles."),
+            conclusion("2", "Une population très particulière",
+                       "Des étudiants d'une université d'élite, de 26 ans en moyenne, issus de quartiers",
+                       "aisés, avec des parcours très genrés. Les résultats ne se généralisent pas à",
+                       "toute la population."),
+            conclusion("3", "Des préférences déclarées différentes selon le genre",
+                       "Les hommes disent chercher d'abord l'attirance, les femmes l'intelligence, et",
+                       "chaque sexe surestime l'importance du physique pour l'autre."),
+            conclusion("4", "Mais le physique décide, pour tout le monde",
+                       "Dans les décisions, l'attirance domine chez les deux genres, suivie de l'humour",
+                       "et des intérêts communs. Les six notes sont fortement corrélées : une note est",
+                       "surtout une impression générale."),
+            conclusion("5", "Rester au plus près de la soirée",
+                       "La fiche de notation est complète ; les suivis sont très incomplets et sans",
+                       "doute biaisés. Les analyses doivent reposer sur les décisions prises pendant la",
+                       "soirée.")
+          )
         )
       )
     )
   ),
 
-  # --- Tester de compatibilité ----------------------------------------------------------
+  # --- Testeur de compatibilité ------------------------------------------------------------
   tabPanel(
     "Testeur de compatibilité", value = "compatibilite",
     div(
-      class = "parcours",
+      class = "page",
       h3("Ces deux personnes vont-elles matcher ?"),
       p(class = "intro",
         "Choisis les profils de deux participants et, si tu le souhaites, leurs notes après la",
@@ -229,80 +242,95 @@ navbarPage(
         # Formulaire ----------------------------------------------------------------------
         column(
           5,
-          wellPanel(
+          div(
+            class = "formulaire",
             radioButtons("p_modele", "Ce que l'on sait",
                          choices = c("Après la rencontre : profils et notes échangées" = "complet",
                                      "Avant la rencontre : profils seulement" = "profil")),
-            hr(),
-            h6("Partir d'un couple de l'expérience (facultatif)"),
-            fluidRow(
-              column(4, selectInput("p_vague", "Soirée", choices = levels(dates_app$wave),
-                                    selected = "7")),
-              column(4, selectInput("p_femme", "Femme", choices = NULL)),
-              column(4, selectInput("p_homme", "Homme", choices = NULL))
-            ),
-            actionButton("p_charger", "♡ Remplir avec ce couple", class = "btn-rose btn-sm"),
-            hr(),
-            fluidRow(
-              column(6,
-                     h6("Elle"),
-                     sliderInput("p_age_f", "Âge", min = 18, max = 55, value = depart$age,
-                                 step = 1, ticks = FALSE),
-                     selectInput("p_origine_f", "Origine déclarée", choices = origines_pred),
-                     selectInput("p_milieu_f", "Milieu social : revenu médian de son quartier d'enfance",
-                                 choices = milieux$classe, selected = milieu_de(median(milieux$revenu)))),
-              column(6,
-                     h6("Lui"),
-                     sliderInput("p_age_h", "Âge", min = 18, max = 55, value = depart$age,
-                                 step = 1, ticks = FALSE),
-                     selectInput("p_origine_h", "Origine déclarée", choices = origines_pred),
-                     selectInput("p_milieu_h", "Milieu social : revenu médian de son quartier d'enfance",
-                                 choices = milieux$classe, selected = milieu_de(median(milieux$revenu))))
-            ),
-            p(class = "resume", strong(textOutput("t_ecart_revenu", inline = TRUE))),
-            sliderInput("p_int_corr", "Ressemblance de leurs centres d'intérêt (corrélation, de -1 à 1)",
-                        min = -1, max = 1, value = round(depart$int_corr, 2), step = 0.05,
-                        ticks = FALSE, width = "100%"),
+
+            div(class = "bloc",
+                h6("Partir d'un couple de l'expérience (facultatif)"),
+                fluidRow(
+                  column(4, selectInput("p_vague", "Soirée", choices = levels(dates_app$wave),
+                                        selected = "7")),
+                  column(4, selectInput("p_femme", "Femme", choices = NULL)),
+                  column(4, selectInput("p_homme", "Homme", choices = NULL))
+                ),
+                actionButton("p_charger", "♡ Remplir avec ce couple",
+                             class = "btn-outline-primary btn-sm")),
+
+            div(class = "bloc",
+                fluidRow(
+                  column(6,
+                         h6(class = "femme", "Elle"),
+                         sliderInput("p_age_f", "Âge", min = 18, max = 55, value = depart$age,
+                                     step = 1, ticks = FALSE),
+                         selectInput("p_origine_f", "Origine déclarée", choices = origines_pred),
+                         selectInput("p_milieu_f", "Milieu social", choices = milieux$classe,
+                                     selected = milieu_de(median(milieux$revenu)))),
+                  column(6,
+                         h6(class = "homme", "Lui"),
+                         sliderInput("p_age_h", "Âge", min = 18, max = 55, value = depart$age,
+                                     step = 1, ticks = FALSE),
+                         selectInput("p_origine_h", "Origine déclarée", choices = origines_pred),
+                         selectInput("p_milieu_h", "Milieu social", choices = milieux$classe,
+                                     selected = milieu_de(median(milieux$revenu))))
+                ),
+                p(class = "lecture",
+                  "Milieu social : revenu médian du quartier où chacun a grandi (Census).",
+                  textOutput("t_ecart_revenu", inline = TRUE)),
+                sliderInput("p_int_corr", "Ressemblance de leurs centres d'intérêt (corrélation, de -1 à 1)",
+                            min = -1, max = 1, value = round(depart$int_corr, 2), step = 0.05,
+                            ticks = FALSE, width = "100%")),
+
             conditionalPanel(
               "input.p_modele == 'complet'",
-              hr(),
-              fluidRow(
-                column(6,
-                       h6("Les notes qu'elle lui donne"),
-                       lapply(criteres_notes, \(n) {
-                         sliderInput(paste0("p_f_", n), lab_notes[[n]], min = 0, max = 10,
-                                     value = depart[[n]], step = 0.5, ticks = FALSE)
-                       })),
-                column(6,
-                       h6("Les notes qu'il lui donne"),
-                       lapply(criteres_notes, \(n) {
-                         sliderInput(paste0("p_h_", n), lab_notes[[n]], min = 0, max = 10,
-                                     value = depart[[n]], step = 0.5, ticks = FALSE)
-                       }))
-              )
+              div(class = "bloc",
+                  fluidRow(
+                    column(6,
+                           h6(class = "femme", "Les notes qu'elle lui donne"),
+                           lapply(criteres_notes, \(n) {
+                             sliderInput(paste0("p_f_", n), lab_notes[[n]], min = 0, max = 10,
+                                         value = depart[[n]], step = 0.5, ticks = FALSE)
+                           })),
+                    column(6,
+                           h6(class = "homme", "Les notes qu'il lui donne"),
+                           lapply(criteres_notes, \(n) {
+                             sliderInput(paste0("p_h_", n), lab_notes[[n]], min = 0, max = 10,
+                                         value = depart[[n]], step = 0.5, ticks = FALSE)
+                           }))
+                  ))
             )
           )
         ),
 
-        # Résultat ---------------------------------------------------------------------------
+        # Résultat : reste visible pendant que l'on règle le formulaire --------------------------
         column(
-          7,
+          7, class = "colle",
           uiOutput("p_resultat"),
           uiOutput("p_reel"),
           h5("Ce qui pèse dans la prédiction"),
           p(class = "lecture",
             "Les barres indiquent l'effet de chaque critère sur la probabilité de dire oui."),
-          p(class = "lecture", uiOutput("t_etoile", inline = TRUE)),
-          plotlyOutput("p_contributions", height = "440px"),
-          h5("Le modèle est-il fiable ?"),
+          plotlyOutput("p_contributions", height = "400px"),
+          p(class = "resume", uiOutput("t_etoile", inline = TRUE))
+        )
+      ),
+
+      # Fiabilité du modèle ----------------------------------------------------------------
+      h4(class = "section", "Le modèle est-il fiable ?"),
+      fluidRow(
+        column(
+          5,
           uiOutput("p_performance"),
           p(class = "lecture",
-            "La courbe de calibrage compare la probabilité prédite au taux réel de match."),
-          plotlyOutput("p_calibration", height = "360px"),
+            "La courbe de calibrage compare la probabilité prédite au taux réel de match : sur",
+            "la diagonale, la probabilité annoncée correspond au taux observé."),
           a_retenir(
-            "Les modèles utilisent les profils et les notes disponibles. Les résultats sont limité à l'échantillon où le revenu du quartier d'enfance est connu des deux côtés."
+            "Les modèles utilisent les profils et les notes disponibles. Les résultats sont limités à l'échantillon où le revenu du quartier d'enfance est connu des deux côtés."
           )
-        )
+        ),
+        column(7, plotlyOutput("p_calibration", height = "360px"))
       )
     )
   ),
@@ -310,42 +338,40 @@ navbarPage(
   # --- À propos ---------------------------------------------------------------------
   tabPanel(
     "À propos",
-    fluidRow(
-      column(
-        width = 8, offset = 2,
-        h3("Le choix du partenaire reproduit-il le milieu social ?"),
-        p("Les données viennent de 21 soirées de speed dating organisées à l'université",
-          "Columbia entre 2002 et 2004 (Fisman et al., 2006) : 551 étudiants, 8 378 dates de",
-          "quatre minutes, après chacun desquels chaque personne dit oui ou non. Nous les",
-          "avons enrichies avec le revenu médian et l'indice de Gini du quartier d'enfance de",
-          "chaque participant (US Census, ACS 2017-2021)."),
-        h4("Découvrir les données"),
-        p("Cinq graphiques interactifs qui résument le jeu de données, un par grand bloc de",
-          "colonnes : la structure de l'expérience, les participants, leurs préférences",
-          "déclarées, ce qui les fait dire oui (avec une vue en 3D) et la fiabilité des",
-          "données. Chacun se termine par un encadré « À retenir »."),
-        h4("Testeur de compatibilité"),
-        p("Deux régressions logistiques, une par genre, estiment la probabilité que chacun dise",
-          "oui à partir des profils, de l'écart de milieu social et, après la rencontre, des notes",
-          "échangées. Un encadré montre ce que change l'écart de milieu social. La probabilité",
-          "de match est le produit des deux. Les performances sont mesurées par validation",
-          "croisée : chaque soirée est prédite par un modèle ajusté sur les vingt autres."),
-        h4("Pour aller plus loin"),
-        tags$ul(
-          tags$li(a("Analyse exploratoire",
-                    href = "https://github.com/pierridotite/mate-choice-social-reproduction/blob/main/exploration.md",
-                    target = "_blank")),
-          tags$li(a("Modèles", target = "_blank",
-                    href = "https://github.com/pierridotite/mate-choice-social-reproduction/blob/main/modeles.md")),
-          tags$li(a("Robustesse", target = "_blank",
-                    href = "https://github.com/pierridotite/mate-choice-social-reproduction/blob/main/robustesse.md"))
-        ),
-        h4("Sources"),
-        p("Fisman, R., Iyengar, S. S., Kamenica, E. et Simonson, I. (2006). Gender Differences",
-          "in Mate Selection: Evidence From a Speed Dating Experiment. Quarterly Journal of",
-          "Economics, 121(2), 673-697. US Census Bureau, American Community Survey 2017-2021,",
-          "tables B19013, B19083 et B01003.")
-      )
+    div(
+      class = "page page-texte",
+      h3("Le choix du partenaire reproduit-il le milieu social ?"),
+      p("Les données viennent de 21 soirées de speed dating organisées à l'université",
+        "Columbia entre 2002 et 2004 (Fisman et al., 2006) : 551 étudiants, 8 378 dates de",
+        "quatre minutes, après chacun desquels chaque personne dit oui ou non. Nous les",
+        "avons enrichies avec le revenu médian et l'indice de Gini du quartier d'enfance de",
+        "chaque participant (US Census, ACS 2017-2021)."),
+      h4("Découvrir les données"),
+      p("Cinq graphiques interactifs qui résument le jeu de données, un par grand bloc de",
+        "colonnes : la structure de l'expérience, les participants, leurs préférences",
+        "déclarées, ce qui les fait dire oui (avec une vue en 3D) et la fiabilité des",
+        "données. Chacun se termine par un encadré « À retenir »."),
+      h4("Testeur de compatibilité"),
+      p("Deux régressions logistiques, une par genre, estiment la probabilité que chacun dise",
+        "oui à partir des profils, de l'écart de milieu social et, après la rencontre, des notes",
+        "échangées. Un encadré montre ce que change l'écart de milieu social. La probabilité",
+        "de match est le produit des deux. Les performances sont mesurées par validation",
+        "croisée : chaque soirée est prédite par un modèle ajusté sur les vingt autres."),
+      h4("Pour aller plus loin"),
+      tags$ul(
+        tags$li(a("Analyse exploratoire", target = "_blank",
+                  href = "https://github.com/pierridotite/mate-choice-social-reproduction/blob/main/exploration.md")),
+        tags$li(a("Modèles", target = "_blank",
+                  href = "https://github.com/pierridotite/mate-choice-social-reproduction/blob/main/modeles.md")),
+        tags$li(a("Robustesse", target = "_blank",
+                  href = "https://github.com/pierridotite/mate-choice-social-reproduction/blob/main/robustesse.md"))
+      ),
+      h4("Sources"),
+      p(class = "sources",
+        "Fisman, R., Iyengar, S. S., Kamenica, E. et Simonson, I. (2006). Gender Differences",
+        "in Mate Selection: Evidence From a Speed Dating Experiment. Quarterly Journal of",
+        "Economics, 121(2), 673-697. US Census Bureau, American Community Survey 2017-2021,",
+        "tables B19013, B19083 et B01003.")
     )
   )
 )

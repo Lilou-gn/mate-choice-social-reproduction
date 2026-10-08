@@ -47,7 +47,8 @@ function(input, output, session) {
       filter(bloc == input$d_bloc) |>
       arrange(desc(manquants)) |>
       transmute(Variable = nom, `Libellé` = libelle, Manquants = manquants, `Aperçu` = apercu) |>
-      datatable(rownames = FALSE, options = list(pageLength = 10, dom = "tip", language = langue_dt)) |>
+      datatable(rownames = FALSE, options = list(pageLength = 10, dom = "t<'pied-tableau'ip>",
+                                               language = langue_dt)) |>
       formatPercentage("Manquants", digits = 1, dec.mark = ",")
   })
 
@@ -107,11 +108,12 @@ function(input, output, session) {
   output$p_resultat <- renderUI({
     r <- resultat()
     rapport <- r$match / prediction$taux_match
-    tagList(
-      fluidRow(
-        column(4, chiffre_cle(pct(r$match), "de chances de match")),
-        column(4, chiffre_cle(pct(r$elle), "de chances qu'elle dise oui")),
-        column(4, chiffre_cle(pct(r$lui), "de chances qu'il dise oui"))
+    div(
+      class = "verdict",
+      chiffres_cles(
+        chiffre_cle(pct(r$match), "de chances de match", class = "match"),
+        chiffre_cle(pct(r$elle), "de chances qu'elle dise oui", class = "femme"),
+        chiffre_cle(pct(r$lui), "de chances qu'il dise oui", class = "homme")
       ),
       p(class = "resume", paste0(
         "Soit ", virgule(rapport, 1), " fois le taux de match moyen des couples de l'expérience (",
@@ -132,7 +134,8 @@ function(input, output, session) {
       all(abs(s$elle$notes - unlist(cp[paste0("f_", criteres_notes)])) < 0.01) &&
       all(abs(s$lui$notes - unlist(cp[paste0("h_", criteres_notes)])) < 0.01)
     div(class = "a-retenir",
-        strong(paste0("Couple chargé : F", cp$num_f, " et H", cp$num_h, " (soirée ", cp$wave, ")")),
+        div(class = "titre", paste0("Couple chargé : F", cp$num_f, " et H", cp$num_h,
+                                    " (soirée ", cp$wave, ")")),
         p(paste0("Dans la réalité : elle a dit ", oui_non(cp$dec_f), ", il a dit ", oui_non(cp$dec_h),
                  if (cp$match == 1) ". C'est un match." else ". Pas de match.")),
         if (!identique) {
@@ -143,7 +146,7 @@ function(input, output, session) {
   output$t_ecart_revenu <- renderText({
     s <- saisie()
     e <- ecart_doublements(s$elle$revenu, s$lui$revenu)
-    paste0("Écart de milieu social : le quartier le plus aisé a un revenu ", en_rapport(e),
+    paste0("Écart : le quartier le plus aisé a un revenu ", en_rapport(e),
            " celui de l'autre (", virgule(e, 1), " doublement", if (e >= 2) "s" else "", ").")
   })
 
@@ -171,11 +174,11 @@ function(input, output, session) {
 
   output$p_performance <- renderUI({
     perf <- filter(prediction$performance, modele == paste0(input$p_modele, "_social"))
-    fluidRow(
-      column(6, chiffre_cle(virgule(perf$auc_match, 2),
-                            "AUC du match sur des soirées non vues (0,5 = hasard, 1 = parfait)")),
-      column(6, chiffre_cle(virgule(perf$auc_decision, 2),
-                            "AUC de la décision de chacun sur des soirées non vues"))
+    chiffres_cles(
+      chiffre_cle(virgule(perf$auc_match, 2),
+                  "AUC du match sur des soirées non vues (0,5 = hasard, 1 = parfait)"),
+      chiffre_cle(virgule(perf$auc_decision, 2),
+                  "AUC de la décision de chacun sur des soirées non vues")
     )
   })
 
