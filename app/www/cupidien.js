@@ -6,9 +6,7 @@ $(document).on('click', '#navigation a[data-value="compatibilite"]', function() 
     popup.className = 'cupidien-overlay';
     popup.setAttribute('aria-hidden', 'true');
     popup.innerHTML = `<div class="cupidien-popup">
-      <div class="cupidien-illustration">
-        <img class="cupidien-drawing" src="https://shareprint.fr/wp-content/uploads/2020/02/cupidon.png" alt="Cupidon" />
-      </div>
+      <img class="cupidien-drawing" src="https://shareprint.fr/wp-content/uploads/2020/02/cupidon.png" alt="Cupidon" />
       <h2>Cupidon entre en scène !</h2>
       <p>À vous de tester votre compatibilité.</p>
     </div>`;
